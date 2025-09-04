@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Good Runners — App</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Estilos globais e cores */
+:root {
+  --background-dark: #111;
+  --surface-dark: #1a1a1a;
+  --card-dark: #222;
+  --text-primary-dark: #fff;
+  --text-secondary-dark: #ccc;
+  --accent-color: #ffcc00;
+  --rank-number-color: #f7a30c;
+
+  --background-light: #f0f2f5;
+  --surface-light: #fff;
+  --card-light: #e0e0e0;
+  --text-primary-light: #333;
+  --text-secondary-light: #666;
+  --rank-number-light: #e67e22;
+
+  --success-color: #28a745;
+  --error-color: #dc3545;
+}
+
+[data-theme="light"] {
+  background-color: var(--background-light);
+  color: var(--text-primary-light);
+}
+[data-theme="light"] header {
+  background-color: var(--surface-light);
+  color: var(--text-primary-light);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+[data-theme="light"] header .header-title h1, [data-theme="light"] header .header-title .subtitle { color: var(--text-primary-light); }
+[data-theme="light"] .container { color: var(--text-primary-light); }
+[data-theme="light"] .ranking li { background-color: var(--card-light); color: var(--text-primary-light); }
+[data-theme="light"] .ranking li:hover { background-color: #d1d1d1; }
+[data-theme="light"] .form-section { background-color: var(--surface-light); }
+[data-theme="light"] .form-section input {
+  background-color: #fff;
+  border-color: #ccc;
+  color: var(--text-primary-light);
+}
+[data-theme="light"] .calendar {
+  background-color: var(--card-light);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+[data-theme="light"] .calendar .day { background-color: var(--card-light); color: var(--text-primary-light); }
+[data-theme="light"] .calendar .day.passed { background-color: #b0b0b0; color: #555; }
+[data-theme="light"] .calendar .day.today { background: var(--success-color); color:#fff; font-weight:bold; border:1px solid var(--success-color); box-shadow:0 0 8px var(--success-color); }
+[data-theme="light"] .toast { background-color: var(--surface-light); color: var(--text-primary-light); box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+[data-theme="light"] #searchBar { background-color: var(--surface-light); border-color: #ccc; color: var(--text-primary-light); }
+[data-theme="light"] #lastUpdated { color: var(--text-secondary-light); }
+[data-theme="light"] .rank { color: var(--rank-number-light); }
+[data-theme="light"] .top1, [data-theme="light"] .top2, [data-theme="light"] .top3 { color: #333; }
+[data-theme="light"] .top1 .rank, [data-theme="light"] .top1 .dupla, [data-theme="light"] .top1 .distance { color: #333; }
+[data-theme="light"] .top2 .rank, [data-theme="light"] .top2 .dupla, [data-theme="light"] .top2 .distance { color: #333; }
+[data-theme="light"] .top3 .rank, [data-theme="light"] .top3 .dupla, [data-theme="light"] .top3 .distance { color: #333; }
+[data-theme="light"] .timer-balloon { 
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ccc;
+  color: var(--text-primary-light);
+}
+[data-theme="light"] .timer-balloon .timer-balloon-time {
+  color: var(--text-primary-light);
+}
+[data-theme="light"] .main-menu-container {
+  background-color: var(--surface-light);
+  color: var(--text-primary-light);
+  border-left: 1px solid #ccc;
+  box-shadow: -4px 0 8px rgba(0, 0, 0, 0.1);
+}
+[data-theme="light"] .menu-item {
+  color: var(--text-primary-light);
+  border-bottom: 1px solid #e0e0e0;
+}
+[data-theme="light"] .menu-item:hover {
+  background: #f0f0f0;
+}
+[data-theme="light"] .sub-menu {
+  background: #f0f0f0;
+}
+[data-theme="light"] .menu-item.sub-menu-toggle {
+    color: var(--text-primary-light);
+}
+[data-theme="light"] .menu-icon-wrapper span {
+  background-color: var(--text-primary-light);
+}
+[data-theme="light"] .modal-close-btn {
+  color: var(--text-secondary-light);
+}
+[data-theme="light"] .modal-box {
+  background-color: var(--surface-light);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; font-family: 'Poppins', sans-serif; }
+body {
+  background-color: var(--background-dark);
+  color: var(--text-primary-dark);
+  transition: background-color 0.5s, color 0.5s;
+}
+
+/* Header */
+header {
+  position: fixed;
+  top:0; left:0; right:0;
+  height: 100px;
+  background: var(--surface-dark);
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content:center;
+  padding:0 20px;
+  z-index:1000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.7);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 800px;
+}
+
+.header-title {
+  text-align: left;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.header-title h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 2px;
+  line-height: 1;
+}
+
+.header-title .subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: #a9a9a9;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+/* Novo estilo para o ícone de menu */
+.menu-icon-wrapper {
+  width: 30px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2px 0;
+  z-index: 1002;
+  transition: transform 0.3s ease-in-out;
+  margin-left: auto;
+}
+
+.menu-icon-wrapper span {
+  display: block;
+  height: 3px;
+  width: 100%;
+  background-color: var(--text-primary-dark);
+  border-radius: 2px;
+  transition: all 0.3s ease-in-out;
+}
+
+.menu-icon-wrapper.open span:nth-child(1) {
+  transform: translateY(10px) rotate(45deg);
+}
+.menu-icon-wrapper.open span:nth-child(2) {
+  opacity: 0;
+}
+.menu-icon-wrapper.open span:nth-child(3) {
+  transform: translateY(-10px) rotate(-45deg);
+}
+
+/* Container principal */
+.container {
+  max-width: 800px;
+  margin: 110px auto 20px auto;
+  padding: 10px;
+  transition: color 0.5s;
+}
+
+/* Search bar */
+.search-container { margin: 20px 0; }
+#searchBar {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #222;
+  color: #fff;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+#searchBar:focus { outline: none; border-color: var(--accent-color); }
+
+/* Ranking */
+.ranking { list-style:none; margin:0; padding:0; }
+.ranking li {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:16px;
+  border-radius:12px;
+  margin-bottom:10px;
+  background-color: var(--card-dark);
+  transition:0.3s;
+  flex-wrap:nowrap;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  position: relative;
+  overflow: hidden;
+  animation: slideIn 0.5s ease-out;
+  gap: 15px;
+}
+@keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.ranking li:hover { background-color: #333; transform: translateY(-2px); }
+
+.rank {
+  flex-shrink: 0;
+  width:30px;
+  text-align:center;
+  font-weight:700;
+  font-size:16px;
+  color: var(--rank-number-color);
+}
+
+.dupla {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  gap: 2px;
+}
+
+.dupla span {
+  font-size:16px;
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.distance {
+  flex-shrink: 0;
+  font-weight:700;
+  width:60px;
+  text-align:right;
+  font-size: 14px;
+}
+
+/* Destaques para o Top 3 */
+.top1 {
+    background: linear-gradient(90deg, #ffd700, #ffaa00);
+    color: #111;
+    font-weight:bold;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Efeito de brilho laminado para o Top 1 e a Dupla Destaque */
+.top1::before,
+.top2::before,
+.top3::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-20deg);
+    animation: shine 2s infinite;
+}
+
+@keyframes shine {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 150%;
+    }
+}
+
+.top1 .rank, .top1 .dupla, .top1 .distance { color: #111; }
+.top2 { background: linear-gradient(90deg, #c0c0c0, #999); color: #111; font-weight:bold; }
+.top2 .rank, .top2 .dupla, .top2 .distance { color: #111; }
+.top3 { background: linear-gradient(90deg, #cd7f32, #a0522d); color: #111; font-weight:bold; }
+.top3 .rank, .top3 .dupla, .top3 .distance { color: #111; }
+
+/* Botões app-style */
+button { cursor:pointer; border:none; border-radius:8px; transition:0.2s; font-weight: 600; }
+.alter-btn {
+  flex-shrink: 0;
+  padding:8px 16px;
+  background:#444;
+  color:#fff;
+}
+.alter-btn:hover { background:#666; }
+
+/* Menu pop-up para admin */
+.admin-menu {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.8);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.ranking li.show-admin .admin-menu {
+  opacity: 1;
+  visibility: visible;
+}
+.admin-menu button { padding: 8px 12px; color: #fff; font-size: 14px; }
+.admin-menu .edit-btn { background: #007bff; }
+.admin-menu .edit-btn:hover { background: #0056b3; }
+.admin-menu .reset-btn { background: #ffc107; color: #333; }
+.admin-menu .reset-btn:hover { background: #e0a800; }
+.admin-menu .delete-btn { background: #dc3545; }
+.admin-menu .delete-btn:hover { background: #c82333; }
+
+/* Formulário adicionar dupla */
+.form-section {
+  margin:20px 0;
+  padding:20px;
+  border-radius:12px;
+  background: var(--surface-dark);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+.form-section h2 { margin-bottom:15px; font-size: 20px; }
+.form-section input {
+  padding:10px;
+  margin-bottom:10px;
+  width: 100%;
+  border-radius:8px;
+  border:1px solid #555;
+  background:#222;
+  color:#fff;
+  font-size: 16px;
+}
+.form-section input:focus { outline:none; border-color: var(--accent-color); }
+
+.form-section button {
+  background: var(--success-color);
+  padding:10px 20px;
+  color:#fff;
+  margin-top:10px;
+  width: 100%;
+}
+.form-section button:hover { background:#1e7e34; }
+
+/* Cronograma */
+.calendar { 
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 12px;
+  background-color: var(--card-dark);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+.calendar h2 { margin-bottom:0; font-size: 20px; }
+.calendar .subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: #a9a9a9;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  display: block;
+}
+.calendar-grid {
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:15px;
+}
+.day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius:12px;
+  padding:16px; /* Ajustado para 16px para combinar com o ranking */
+  text-align:center;
+  background: var(--card-dark);
+  color: var(--text-primary-dark);
+  /* Removido a sombra interna para consistência */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* Aplicado a mesma sombra do ranking */
+  transition:0.3s, transform 0.3s;
+  font-size: 16px; /* Ajustado para 16px para consistência */
+  font-weight: 600;
+}
+.day.passed { background:#444; color: var(--text-secondary-dark); }
+.day.today { background: var(--success-color); color:#fff; font-weight:bold; border:1px solid var(--success-color); box-shadow:0 0 8px var(--success-color); animation:pulse 1.5s infinite; }
+.day.future {
+  background: var(--card-dark);
+  color: var(--text-primary-dark);
+  opacity: 0.5;
+}
+.day:hover { transform: translateY(-2px); cursor:pointer; } /* Ajustado para o mesmo efeito do ranking */
+.day.future:hover { transform: none; }
+
+
+@keyframes pulse {
+  0% { box-shadow:0 0 8px var(--success-color); }
+  50% { box-shadow:0 0 18px var(--success-color); }
+  100% { box-shadow:0 0 8px var(--success-color); }
+}
+
+/* Toast notifications */
+.toast {
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#333;
+  color:#fff;
+  padding:12px 24px;
+  border-radius:8px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.7);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  z-index:1000;
+  font-weight: 600;
+}
+.toast.show { opacity:1; pointer-events:auto; }
+.toast.success { background-color: var(--success-color); }
+.toast.error { background-color: var(--error-color); }
+
+/* Menu de configurações (agora é o menu principal) */
+.main-menu-container {
+  position: fixed;
+  top: 100px;
+  right: -250px;
+  width: 250px;
+  height: calc(100% - 100px);
+  background: var(--surface-dark);
+  border-left: 1px solid #444;
+  box-shadow: -4px 0 8px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  transition: right 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+.main-menu-container.show-menu {
+  right: 0;
+}
+
+.menu-item {
+  width: 100%;
+  padding: 15px 20px;
+  text-align: left;
+  color: var(--text-primary-dark);
+  font-size: 16px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #282828;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-item:hover {
+  background: #333;
+}
+.menu-item.sub-menu-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sub-menu {
+  display: none;
+  flex-direction: column;
+  background: #282828;
+}
+.sub-menu.show-sub-menu {
+  display: flex;
+}
+.sub-menu .menu-item {
+  padding-left: 40px;
+  font-size: 14px;
+}
+
+/* Novo Estilo para o Balão de Tempo */
+.timer-balloon {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(34, 34, 34, 0.9);
+  padding: 10px 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 999;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--text-primary-dark);
+  border: 1px solid #333;
+  transition: background-color 0.5s, border-color 0.5s;
+}
+
+/* ======================== */
+/* Modal de Login e Cadastro */
+/* ======================== */
+.modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.modal-container.show-modal {
+  display: flex;
+  opacity: 1;
+}
+
+.modal-box {
+  background-color: var(--surface-dark);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+  max-width: 400px;
+  width: 90%;
+  position: relative;
+  transform: translateY(20px);
+  transition: transform 0.3s ease-in-out;
+}
+
+.modal-container.show-modal .modal-box {
+  transform: translateY(0);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: var(--text-secondary-dark);
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+  color: var(--error-color);
+}
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.modal-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary-dark);
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.modal-form input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #222;
+  color: var(--text-primary-dark);
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.modal-form input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.modal-form button {
+  padding: 12px;
+  background-color: var(--success-color);
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+.modal-form button:hover {
+  background-color: #1e7e34;
+}
+
+.modal-link-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.modal-link {
+  font-size: 14px;
+  color: var(--text-secondary-dark);
+  text-decoration: none;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+.modal-link:hover {
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
+/* Opcional: Animação de entrada do modal */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-container {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Coming soon page */
+.coming-soon-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    flex-direction: column;
+    padding: 20px;
+    background-color: var(--background-dark);
+    color: var(--text-primary-dark);
+    transition: background-color 0.5s, color 0.5s;
+}
+
+.coming-soon-container h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.coming-soon-container p {
+    font-size: 1.2rem;
+    color: var(--text-secondary-dark);
+}
+
+/* Efeito de ênfase ao sair da loja */
+.exit-shop-effect {
+  animation: fadeOut 0.5s ease-out;
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(10px); }
+}
+
+/* Estilo para o pop-up de destaque (Balão horizontal) */
+.highlight-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.highlight-modal.show-highlight {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.highlight-box {
+    background: linear-gradient(90deg, #ffd700, #ffaa00);
+    padding: 20px 30px;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    text-align: center;
+    max-width: 80%;
+    min-width: 300px;
+    color: #111;
+    position: relative;
+    transform: scale(0.8) translateY(20px);
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+/* Efeito de brilho laminado para o balão de destaque */
+.highlight-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-20deg);
+    animation: shine 2s infinite;
+}
+
+@keyframes shine {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 150%;
+    }
+}
+
+.highlight-modal.show-highlight .highlight-box {
+    transform: scale(1) translateY(0);
+}
+
+#highlight-modal h1 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+#highlight-modal p {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.7;
+}
+
+.highlight-box .close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: #111;
+    font-size: 24px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    z-index: 2;
+}
+.highlight-box .close-btn:hover {
+    opacity: 1;
+}
+</style>
+</head>
+<body data-theme="dark">
+
+<header>
+  <div class="header-content">
+    <div class="header-title">
+      <h1>GOOD RUNNERS</h1>
+      <span class="subtitle" id="header-subtitle" style="cursor:pointer">RANKING</span>
+    </div>
+    <div class="menu-icon-wrapper" id="menu-icon-wrapper">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+  </div>
+</header>
+
+<div class="container" id="main-content">
+  <div class="search-container">
+    <input type="text" id="searchBar" placeholder="Pesquisar dupla...">
+  </div>
+  <ul class="ranking" id="rankingList"></ul>
+
+  <div class="form-section" id="addPairSection" style="display:none;">
+    <h2>Adicionar nova dupla</h2>
+    <form id="addPairForm">
+      <input type="text" id="member1" placeholder="Membro 1" required>
+      <input type="text" id="member2" placeholder="Membro 2" required>
+      <button type="submit">Adicionar Dupla</button>
+    </form>
+  </div>
+
+  <div class="calendar">
+    <h2 id="calendar-month"></h2>
+    <span id="calendar-challenge-subtitle" class="subtitle"></span>
+    <div class="calendar-grid" id="calendarGrid"></div>
+  </div>
+</div>
+
+<div class="coming-soon-container" id="coming-soon-page" style="display: none;">
+    <h1>Em breve</h1>
+    <p>Estamos preparando algo incrível para você. Aguarde!</p>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div class="timer-balloon">
+  <span class="timer-balloon-title">Tempo Restante</span>
+  <span class="timer-balloon-time" id="raceTimer">00:00:00:00</span>
+</div>
+
+<div class="main-menu-container" id="main-menu-container">
+    <div class="menu-item sub-menu-toggle" id="settings-options">
+      Configurações
+      <span>></span>
+    </div>
+    <div class="sub-menu" id="settings-sub-menu">
+        <div class="menu-item sub-menu-toggle" id="theme-options">
+          Tema
+          <span>></span>
+        </div>
+        <div class="sub-menu" id="theme-sub-menu">
+          <div class="menu-item" id="light-theme-btn">Claro</div>
+          <div class="menu-item" id="dark-theme-btn">Escuro</div>
+        </div>
+    </div>
+    <div class="menu-item" id="login-or-profile-btn">Entrar</div>
+    <div class="menu-item" id="shop-btn">Loja</div>
+    <div class="menu-item sub-menu-toggle" id="certificates-options" style="display:none;">
+      Certificados
+      <span>></span>
+    </div>
+    <div class="sub-menu" id="certificates-sub-menu">
+      <div class="menu-item" id="authenticate-certificate-btn">Autenticar Certificado</div>
+    </div>
+    <div class="menu-item" id="last-month-highlight-btn" style="display:none;">
+      Exibir Destaque Mês Anterior
+    </div>
+    <div class="menu-item" id="print-btn" style="display:none;">Imprimir</div>
+    <div class="menu-item" id="admin-mode-btn" style="display:none;">Admin</div>
+    <div class="menu-item" id="home-btn" style="display:none;">Sair da Loja</div>
+</div>
+
+<div id="modal-container" class="modal-container">
+  <div class="modal-box">
+    <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+    <div class="modal-header">
+      <h2 id="modal-title">Entrar</h2>
+    </div>
+    <form id="auth-form" class="modal-form">
+      <input type="email" id="auth-email" placeholder="E-mail" required>
+      <input type="password" id="auth-password" placeholder="Senha" required>
+      <button type="submit" id="auth-submit-btn">Entrar</button>
+    </form>
+    <div class="modal-link-container">
+      <a href="#" class="modal-link" id="forgot-password-link">Esqueceu a senha?</a>
+      <a href="#" class="modal-link" id="toggle-form-link">Criar conta</a>
+    </div>
+  </div>
+</div>
+
+<div class="highlight-modal" id="highlight-modal">
+    <div class="highlight-box">
+        <button class="close-btn" id="highlight-close-btn">&times;</button>
+        <div id="highlight-message"></div>
+    </div>
+</div>
+
+<script>
+// ========================
+// Variáveis e Dados
+// ========================
+let duplas = [
+  { nomes: "Carlos Silva & João Souza", km: 320 },
+  { nomes: "Ana Oliveira & Pedro Costa", km: 295 },
+  { nomes: "Mariana Santos & Lucas Pereira", km: 278 },
+  { nomes: "Fernanda Gomes & Rafael Martins", km: 260 },
+  { nomes: "Juliana Lima & Bruno Almeida", km: 245 },
+  { nomes: "Patrícia Fernandes & Diego Rocha", km: 230 },
+  { nomes: "Camila Araujo & Felipe Nogueira", km: 220 },
+  { nomes: "Beatriz Carvalho & André Ribeiro", km: 210 },
+  { nomes: "Larissa Pinto & Gabriel Barbosa", km: 200 },
+  { nomes: "Paula Teixeira & Matheus Freitas", km: 190 },
+  { nomes: "Aline Castro & Thiago Cardoso", km: 175 },
+  { nomes: "Renata Melo & Gustavo Duarte", km: 160 }
+];
+
+const ADMIN_USER = "admin";
+const ADMIN_PASSWORD = "admin123";
+const FICTITIOUS_EMAIL = "usuario@email.com";
+const FICTITIOUS_PASSWORD = "senha123";
+const LAST_MONTH_HIGHLIGHT_DUOS = [
+    { nomes: "João Silva & Maria Santos", km: 350 },
+    { nomes: "Pedro Costa & Ana Pereira", km: 330 },
+    { nomes: "Lucas Oliveira & Isabela Gomes", km: 310 },
+    { nomes: "Rafael Fernandes & Júlia Martins", km: 290 },
+    { nomes: "Daniel Almeida & Sofia Rodrigues", km: 270 }
+];
+const CERTIFICATE_KEY = "cert-top1-setembro-2025";
+const END_DATE = new Date('2025-09-30T23:59:59');
+
+let isLoggedIn = false;
+let isRegisterForm = false;
+let adminMode = false;
+
+// ========================
+// Elementos do DOM
+// ========================
+const body = document.body;
+const rankingList = document.getElementById("rankingList");
+const addPairSection = document.getElementById('addPairSection');
+const addPairForm = document.getElementById('addPairForm');
+const member1Input = document.getElementById('member1');
+const member2Input = document.getElementById('member2');
+const searchBar = document.getElementById('searchBar');
+const headerSubtitle = document.getElementById('header-subtitle');
+const mainContent = document.getElementById('main-content');
+const comingSoonPage = document.getElementById('coming-soon-page');
+const toast = document.getElementById("toast");
+const timerBalloon = document.querySelector('.timer-balloon');
+const highlightModal = document.getElementById('highlight-modal');
+const highlightMessage = document.getElementById('highlight-message');
+const highlightCloseBtn = document.getElementById('highlight-close-btn');
+
+// Menu Principal
+const menuIconWrapper = document.getElementById('menu-icon-wrapper');
+const mainMenuContainer = document.getElementById('main-menu-container');
+const loginOrProfileBtn = document.getElementById('login-or-profile-btn');
+const shopBtn = document.getElementById('shop-btn');
+const homeBtn = document.getElementById('home-btn');
+const settingsOptions = document.getElementById('settings-options');
+const settingsSubMenu = document.getElementById('settings-sub-menu');
+const themeOptions = document.getElementById('theme-options');
+const themeSubMenu = document.getElementById('theme-sub-menu');
+const lightThemeBtn = document.getElementById('light-theme-btn');
+const darkThemeBtn = document.getElementById('dark-theme-btn');
+const certificatesOptions = document.getElementById('certificates-options');
+const certificatesSubMenu = document.getElementById('certificates-sub-menu');
+const authenticateCertificateBtn = document.getElementById('authenticate-certificate-btn');
+const lastMonthHighlightBtn = document.getElementById('last-month-highlight-btn');
+const printBtn = document.getElementById('print-btn');
+const adminModeBtn = document.getElementById('admin-mode-btn');
+
+// Modal de Autenticação
+const modalContainer = document.getElementById('modal-container');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+const authForm = document.getElementById('auth-form');
+const authEmail = document.getElementById('auth-email');
+const authPassword = document.getElementById('auth-password');
+const authSubmitBtn = document.getElementById('auth-submit-btn');
+const modalTitle = document.getElementById('modal-title');
+const toggleFormLink = document.getElementById('toggle-form-link');
+
+// Calendar
+const calendarGrid = document.getElementById("calendarGrid");
+const calendarMonth = document.getElementById("calendar-month");
+const calendarChallengeSubtitle = document.getElementById("calendar-challenge-subtitle");
+
+// ========================
+// UI Helpers (Funções de Interface)
+// ========================
+function showToast(msg, type = "success") {
+  toast.textContent = msg;
+  toast.className = `toast show ${type}`;
+  setTimeout(() => toast.classList.remove("show"), 2500);
+}
+
+function showModal() {
+  modalContainer.classList.add('show-modal');
+}
+
+function hideModal() {
+  modalContainer.classList.remove('show-modal');
+  isRegisterForm = false;
+  updateModalForm();
+}
+
+function updateModalForm() {
+  modalTitle.textContent = isRegisterForm ? "Criar conta" : "Entrar";
+  authSubmitBtn.textContent = isRegisterForm ? "Cadastrar" : "Entrar";
+  toggleFormLink.textContent = isRegisterForm ? "Já tem conta? Entrar" : "Criar conta";
+}
+
+function toggleAdminMenu(btn) {
+  const li = btn.closest("li");
+  li.classList.toggle("show-admin");
+}
+
+// ========================
+// Ranking (Lógica de Exibição)
+// ========================
+function renderRanking(filteredDuplas = duplas) {
+  const duplasOrdenadas = [...filteredDuplas].sort((a, b) => b.km - a.km);
+  rankingList.innerHTML = "";
+  
+  if (duplasOrdenadas.length === 0) {
+    rankingList.innerHTML = "<p style='text-align:center; padding:20px;'>Nenhuma dupla encontrada.</p>";
+    return;
+  }
+
+  duplasOrdenadas.forEach((dupla, index) => {
+    const li = document.createElement("li");
+    const originalIndex = duplas.findIndex(d => d.nomes === dupla.nomes);
+    
+    if (index === 0) li.classList.add("top1");
+    if (index === 1) li.classList.add("top2");
+    if (index === 2) li.classList.add("top3");
+    
+    const [nome1, nome2] = dupla.nomes.split(' & ');
+
+    li.innerHTML = `
+      <span class="rank">${index + 1}</span>
+      <div class="dupla">
+        <span>${nome1}</span>
+        <span>${nome2}</span>
+      </div>
+      <span class="distance">${dupla.km} km</span>
+      ${adminMode ? `<button class="alter-btn" onclick="toggleAdminMenu(this)">Alterar</button>
+      <div class="admin-menu">
+        <button class="edit-btn" onclick="editKm(${originalIndex})">Editar KM</button>
+        <button class="reset-btn" onclick="resetKm(${originalIndex})">Zerar KM</button>
+        <button class="delete-btn" onclick="deleteTeam(${originalIndex})">Excluir</button>
+      </div>` : ''}
+    `;
+    rankingList.appendChild(li);
+  });
+}
+
+// ========================
+// Data Management (Gerenciamento de Dados)
+// ========================
+function editKm(index) {
+  const novoKm = parseInt(prompt(`Nova quilometragem para ${duplas[index].nomes}:`), 10);
+  if (!isNaN(novoKm) && novoKm >= 0) {
+    duplas[index].km = novoKm;
+    renderRanking();
+    showToast("KM atualizado com sucesso!", "success");
+  } else {
+    showToast("Valor inválido!", "error");
+  }
+}
+
+function resetKm(index) {
+  if (confirm(`Tem certeza que deseja zerar o KM de ${duplas[index].nomes}?`)) {
+    duplas[index].km = 0;
+    renderRanking();
+    showToast("KM zerado com sucesso!", "success");
+  }
+}
+
+function deleteTeam(index) {
+  if (confirm(`Tem certeza que deseja excluir ${duplas[index].nomes}?`)) {
+    duplas.splice(index, 1);
+    renderRanking();
+    showToast("Dupla excluída com sucesso!", "success");
+  }
+}
+
+// ========================
+// Calendar (Cronograma)
+// ========================
+function renderCalendar() {
+  const desafios = ["Desafio Setembro Run", "Corrida da Primavera", "Maratona da Independência", "Troféu Bolt", "Copa Pelé", "Desafio da Velocidade", "Corrida de Ouro"];
+  const mesNome = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+  const mesAtual = new Date().getMonth();
+  
+  const desafioAleatorio = desafios[Math.floor(Math.random() * desafios.length)];
+  
+  calendarMonth.textContent = `${mesNome[mesAtual]} 2025`;
+  calendarChallengeSubtitle.textContent = `${desafioAleatorio}`;
+  
+  const diasNoMes = new Date(2025, 9, 0).getDate(); 
+  const hoje = new Date();
+  
+  calendarGrid.innerHTML = "";
+  
+  for (let dia = 1; dia <= diasNoMes; dia++) {
+    const div = document.createElement("div");
+    div.classList.add("day");
+    
+    const dayDate = new Date(2025, 8, dia);
+    
+    const todayWithoutTime = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+    const dayDateWithoutTime = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate());
+
+    if (dayDateWithoutTime < todayWithoutTime) {
+      div.classList.add("passed");
+    } else if (dayDateWithoutTime.getTime() === todayWithoutTime.getTime()) {
+      div.classList.add("today");
+    } else {
+      div.classList.add("future");
+    }
+    
+    div.textContent = dia;
+    div.addEventListener('click', () => handleDayClick(dayDate));
+    calendarGrid.appendChild(div);
+  }
+}
+
+function handleDayClick(date) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+
+  const diffTime = date.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  let message;
+  if (diffDays === 0) {
+    message = "Hoje";
+  } else if (diffDays > 0) {
+    message = `Faltam ${diffDays} dias para chegar a essa data.`;
+  } else {
+    message = `Essa data foi há ${Math.abs(diffDays)} dias atrás.`;
+  }
+
+  showToast(message, "success");
+}
+
+function updateRaceTime() {
+  const now = new Date();
+  const diffInSeconds = Math.floor((END_DATE - now) / 1000);
+  const timerDisplay = document.getElementById('raceTimer');
+  const timerTitle = timerDisplay.previousElementSibling;
+  
+  if (diffInSeconds <= 0) {
+    timerDisplay.textContent = "00:00:00:00";
+    timerDisplay.style.color = "var(--error-color)";
+    timerTitle.textContent = "Tempo Encerrado";
+    return;
+  }
+  
+  const days = Math.floor(diffInSeconds / (3600 * 24));
+  const hours = Math.floor((diffInSeconds % (3600 * 24)) / 3600);
+  const minutes = Math.floor((diffInSeconds % 3600) / 60);
+  const seconds = diffInSeconds % 60;
+  
+  const formatNumber = num => String(num).padStart(2, '0');
+  
+  timerDisplay.textContent = 
+    `${formatNumber(days)}:${formatNumber(hours)}:${formatNumber(minutes)}:${formatNumber(seconds)}`;
+}
+
+// ========================
+// UI State Management
+// ========================
+function updateUIState() {
+  // Visibilidade dos botões do menu principal
+  loginOrProfileBtn.textContent = isLoggedIn ? "Sair" : "Entrar";
+  certificatesOptions.style.display = isLoggedIn ? 'flex' : 'none';
+  lastMonthHighlightBtn.style.display = isLoggedIn ? 'block' : 'none';
+  printBtn.style.display = isLoggedIn ? 'block' : 'none';
+  adminModeBtn.style.display = isLoggedIn ? 'block' : 'none';
+
+  // Visibilidade do formulário de admin
+  addPairSection.style.display = adminMode ? 'block' : 'none';
+  
+  const isShopPage = headerSubtitle.textContent === 'LOJA';
+  shopBtn.style.display = isShopPage ? 'none' : 'block';
+  homeBtn.style.display = isShopPage ? 'block' : 'none';
+  timerBalloon.style.display = isShopPage ? 'none' : 'block';
+  
+  // Esconde os itens do menu quando a página da loja está ativa
+  if (isShopPage) {
+    loginOrProfileBtn.style.display = 'none';
+    settingsOptions.style.display = 'none';
+    certificatesOptions.style.display = 'none';
+    lastMonthHighlightBtn.style.display = 'none';
+    printBtn.style.display = 'none';
+    adminModeBtn.style.display = 'none';
+  } else {
+    loginOrProfileBtn.style.display = 'block';
+    settingsOptions.style.display = 'flex';
+    certificatesOptions.style.display = isLoggedIn ? 'flex' : 'none';
+    lastMonthHighlightBtn.style.display = isLoggedIn ? 'block' : 'none';
+    printBtn.style.display = isLoggedIn ? 'block' : 'none';
+    adminModeBtn.style.display = isLoggedIn ? 'block' : 'none';
+  }
+
+  renderRanking();
+}
+
+function handleLogin() {
+    const email = authEmail.value;
+    const password = authPassword.value;
+    
+    if (isRegisterForm) {
+        // Lógica de registro
+        showToast(`Conta criada com sucesso para ${email}!`, "success");
+        isLoggedIn = true;
+        hideModal();
+    } else {
+        // Lógica de login
+        if (email === ADMIN_USER && password === ADMIN_PASSWORD) {
+            isLoggedIn = true;
+            adminMode = true;
+            showToast("Login bem-sucedido! Modo Admin Ativado.", "success");
+            hideModal();
+        } else if (email === FICTITIOUS_EMAIL && password === FICTITIOUS_PASSWORD) {
+            isLoggedIn = true;
+            showToast("Login bem-sucedido!", "success");
+            hideModal();
+        } else {
+            showToast("E-mail ou senha incorretos.", "error");
+        }
+    }
+    updateUIState();
+    mainMenuContainer.classList.remove('show-menu');
+    menuIconWrapper.classList.remove('open');
+}
+
+// ========================
+// Event Listeners
+// ========================
+menuIconWrapper.addEventListener('click', () => {
+  mainMenuContainer.classList.toggle('show-menu');
+  menuIconWrapper.classList.toggle('open');
+});
+
+loginOrProfileBtn.addEventListener('click', () => {
+  if (isLoggedIn) {
+    isLoggedIn = false;
+    adminMode = false;
+    showToast("Você saiu da sua conta.", "success");
+    updateUIState();
+  } else {
+    showModal();
+  }
+  mainMenuContainer.classList.remove('show-menu');
+  menuIconWrapper.classList.remove('open');
+});
+
+shopBtn.addEventListener('click', () => {
+  headerSubtitle.textContent = 'LOJA';
+  mainContent.style.display = 'none';
+  comingSoonPage.style.display = 'flex';
+  mainMenuContainer.classList.remove('show-menu');
+  menuIconWrapper.classList.remove('open');
+  updateUIState();
+});
+
+homeBtn.addEventListener('click', () => {
+  comingSoonPage.classList.add('exit-shop-effect');
+  setTimeout(() => {
+    comingSoonPage.style.display = 'none';
+    comingSoonPage.classList.remove('exit-shop-effect');
+    mainContent.style.display = 'block';
+    mainContent.style.animation = 'slideIn 0.5s ease-out';
+    setTimeout(() => {
+      mainContent.style.animation = '';
+    }, 500);
+  }, 500);
+  
+  headerSubtitle.textContent = 'RANKING';
+  mainMenuContainer.classList.remove('show-menu');
+  menuIconWrapper.classList.remove('open');
+  updateUIState();
+});
+
+authForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    handleLogin();
+});
+
+toggleFormLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  isRegisterForm = !isRegisterForm;
+  updateModalForm();
+});
+
+modalCloseBtn.addEventListener('click', hideModal);
+
+document.getElementById('forgot-password-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    showToast("Função de recuperação de senha não implementada.", "error");
+});
+
+addPairForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nome1 = member1Input.value.trim();
+    const nome2 = member2Input.value.trim();
+    if (nome1 && nome2) {
+        const novaDupla = { nomes: `${nome1} & ${nome2}`, km: 0 };
+        duplas.push(novaDupla);
+        member1Input.value = '';
+        member2Input.value = '';
+        renderRanking();
+        showToast("Nova dupla adicionada com sucesso!", "success");
+    } else {
+        showToast("Por favor, preencha ambos os nomes.", "error");
+    }
+});
+
+searchBar.addEventListener('input', (e) => {
+  const searchTerm = e.target.value.toLowerCase();
+  const filteredDuplas = duplas.filter(dupla => 
+    dupla.nomes.toLowerCase().includes(searchTerm)
+  );
+  renderRanking(filteredDuplas);
+});
+
+// Menu principal e sub-menus
+settingsOptions.addEventListener('click', () => settingsSubMenu.classList.toggle('show-sub-menu'));
+themeOptions.addEventListener('click', () => themeSubMenu.classList.toggle('show-sub-menu'));
+certificatesOptions.addEventListener('click', () => certificatesSubMenu.classList.toggle('show-sub-menu'));
+
+lightThemeBtn.addEventListener('click', () => {
+  body.setAttribute('data-theme', 'light');
+  mainMenuContainer.classList.remove('show-menu');
+  menuIconWrapper.classList.remove('open');
+  themeSubMenu.classList.remove('show-sub-menu');
+  settingsSubMenu.classList.remove('show-sub-menu');
+});
+
+darkThemeBtn.addEventListener('click', () => {
+  body.setAttribute('data-theme', 'dark');
+  mainMenuContainer.classList.remove('show-menu');
+  menuIconWrapper.classList.remove('open');
+  themeSubMenu.classList.remove('show-sub-menu');
+  settingsSubMenu.classList.remove('show-sub-menu');
+});
+
+authenticateCertificateBtn.addEventListener('click', () => {
+  const key = prompt("Por favor, digite a chave de autenticação do certificado:");
+  if (key === CERTIFICATE_KEY) {
+    showToast("Certificado autenticado com sucesso!", "success");
+  } else {
+    showToast("Chave de autenticação inválida.", "error");
+  }
+  mainMenuContainer.classList.remove('show-menu');
+  menuIconWrapper.classList.remove('open');
+});
+
+lastMonthHighlightBtn.addEventListener('click', () => {
+  const randomIndex = Math.floor(Math.random() * LAST_MONTH_HIGHLIGHT_DUOS.length);
+  const selectedDuo = LAST_MONTH_HIGHLIGHT_DUOS[randomIndex];
+  highlightMessage.innerHTML = `<h1>Destaque do Mês Anterior:</h1><p>${selectedDuo.nomes} - ${selectedDuo.km}km</p>`;
+  highlightModal.classList.add('show-highlight');
+  mainMenuContainer.classList.remove('show-menu');
+  menuIconWrapper.classList.remove('open');
+});
+
+highlightCloseBtn.addEventListener('click', () => highlightModal.classList.remove('show-highlight'));
+
+printBtn.addEventListener('click', () => window.print());
+
+adminModeBtn.addEventListener('click', () => {
+  if (adminMode) {
+    adminMode = false;
+    showToast("Modo administrador desativado.", "success");
+  } else {
+    const user = prompt("Digite o usuário de administrador:");
+    const password = prompt("Digite a senha de administrador:");
+    if (user === ADMIN_USER && password === ADMIN_PASSWORD) {
+      adminMode = true;
+      showToast("Modo administrador ativado!", "success");
+    } else {
+      showToast("Usuário ou senha incorretos!", "error");
+    }
+  }
+  updateUIState();
+  mainMenuContainer.classList.remove('show-menu');
+  menuIconWrapper.classList.remove('open');
+});
+
+// Fechar o menu e o modal ao clicar fora
+document.addEventListener('click', (e) => {
+  const isMenuOpen = mainMenuContainer.classList.contains('show-menu');
+  if (isMenuOpen && !mainMenuContainer.contains(e.target) && !menuIconWrapper.contains(e.target)) {
+    mainMenuContainer.classList.remove('show-menu');
+    menuIconWrapper.classList.remove('open');
+    themeSubMenu.classList.remove('show-sub-menu');
+    settingsSubMenu.classList.remove('show-sub-menu');
+  }
+
+  const openAdminMenus = document.querySelectorAll('.ranking li.show-admin');
+  openAdminMenus.forEach(li => {
+    if (!li.contains(e.target)) {
+      li.classList.remove('show-admin');
+    }
+  });
+
+  if (e.target === modalContainer) {
+    hideModal();
+  }
+});
+
+headerSubtitle.addEventListener('click', () => {
+    if(headerSubtitle.textContent === 'RANKING') {
+        shopBtn.click();
+    } else if (headerSubtitle.textContent === 'LOJA') {
+        homeBtn.click();
+    }
+});
+
+// ========================
+// Inicialização
+// ========================
+function initializeApp() {
+  updateUIState();
+  renderCalendar();
+  setInterval(updateRaceTime, 1000);
+}
+
+initializeApp();
+</script>
+</body>
+</html>
